@@ -5,3 +5,11 @@ authors = ["devedge <richard.pjski2@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+
+
+# Abort on panic instead of stack unwinding
+[profile.dev] # profile for cargo build
+panic = "abort"
+
+[profile.release] # profile for cargo build --release
+panic = "abort"
