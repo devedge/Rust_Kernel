@@ -5,3 +5,5 @@
     Build freestanding binary on Windows
   - `cargo rustc -- -Z pre-link-arg=-lSystem`
     Build freestanding binary on macOS
+  - `cargo xbuild --target x86_64-rustkernelv2.json`
+    Build kernel against custom target
