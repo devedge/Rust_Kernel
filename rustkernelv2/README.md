@@ -23,3 +23,6 @@
 
     Run the kernel in qemu
 
+  - `qemu-system-x86_64 -drive format=raw,file=target/x86_64-rustkernelv2/debug/bootimage-rustkernelv2.bin -serial mon:stdio`, or `bootimage run -serial mon:stdio`
+
+    Run kernel in qemu with serial arguments
