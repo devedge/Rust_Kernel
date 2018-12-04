@@ -13,9 +13,15 @@ use rustkernelv2::{exit_qemu, println, serial_println};
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
   println!("Hello World{}", "!");
-  serial_println!("Hello Host{}", "!");
+  // serial_println!("Hello Host{}", "!");
 
-  unsafe { exit_qemu(); }
+  rustkernelv2::interrupts::init_idt();
+
+  // invoke a breakpoint exception
+  x86_64::instructions::int3();
+
+  println!("It did not crash");
+  // unsafe { exit_qemu(); }
 
   loop {}
 }

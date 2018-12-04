@@ -1,11 +1,13 @@
 // Common libraries
 
 // Override attributes
+#![feature(abi_x86_interrupt)]
 #![cfg_attr(not(test), no_std)]
 
 // define modules, and make them publicly available outside this file
 pub mod vga_buffer;
 pub mod serial;
+pub mod interrupts;
 
 // Shut down qemu using the isa-debug-exit device (from qemu) located at
 // x86's IO port 0xf4.

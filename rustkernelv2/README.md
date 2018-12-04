@@ -31,7 +31,7 @@
 
     Run kernel in QEMU with serial arguments and shutdown functionality
 
-  - `qemu-system-x86_64 -drive format=raw,file=target/x86_64-blog_os/debug/bootimage-blog_os.bin -serial mon:stdio -device isa-debug-exit,iobase=0xf4,iosize=0x04 -display none`
+  - `qemu-system-x86_64 -drive format=raw,file=target/x86_64-rustkernelv2/debug/bootimage-rustkernelv2.bin -serial mon:stdio -device isa-debug-exit,iobase=0xf4,iosize=0x04 -display none`
 
     or:
 
@@ -39,6 +39,10 @@
 
     Run as above, but hide the graphical QEMU window
 
-  - `bootimage run --bin test-template -- -serial mon:stdio -device isa-debug-exit,iobase=0xf4,iosize=0x04 -display none`
+  - `bootimage run --bin test-basic-boot -- -serial mon:stdio -device isa-debug-exit,iobase=0xf4,iosize=0x04 -display none`
 
-    Run the binary test `test-template`
+    Run the binary test `test-basic-boot`
+
+  - `bootimage test`
+
+    Run all integration tests under `src/bin/` that start with `test-`
