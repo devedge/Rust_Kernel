@@ -38,3 +38,7 @@
     `bootimage run -- -serial mon:stdio -device isa-debug-exit,iobase=0xf4,iosize=0x04 -display none`
 
     Run as above, but hide the graphical QEMU window
+
+  - `bootimage run --bin test-template -- -serial mon:stdio -device isa-debug-exit,iobase=0xf4,iosize=0x04 -display none`
+
+    Run the binary test `test-template`
