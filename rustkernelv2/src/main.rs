@@ -6,27 +6,27 @@
 #![cfg_attr(test, allow(dead_code, unused_macros, unused_imports))]
 
 use core::panic::PanicInfo;
-use rustkernelv2::{exit_qemu, println, serial_println};
+use rustkernelv2::{exit_qemu, print, println, serial_println};
 
 // Entry point convention for Linux. Disable compiler name mangling.
 #[cfg(not(test))]
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
+  use rustkernelv2::interrupts::PICS;
+
   println!("Hello World{}", "!");
-  // serial_println!("Hello Host{}", "!");
 
   rustkernelv2::gdt::init();
   rustkernelv2::interrupts::init_idt();
-
-  // trigger a page fault
-  unsafe {
-    *(0xdeadbeef as *mut u64) = 42;
-  };
+  unsafe { PICS.lock().initialize() };
+  x86_64::instructions::interrupts::enable();
 
   println!("It did not crash");
   // unsafe { exit_qemu(); }
 
-  loop {}
+  loop {
+    print!("-");
+  }
 }
 
 // Diverging function called on panic
