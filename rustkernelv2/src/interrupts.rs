@@ -2,7 +2,7 @@
 
 #![cfg(not(windows))]
 
-use crate::{gdt, print, println};
+use crate::{gdt, hlt_loop, print, println};
 use x86_64::structures::idt::{InterruptDescriptorTable, ExceptionStackFrame};
 use lazy_static::lazy_static;
 use pic8259_simple::ChainedPics;
@@ -41,15 +41,15 @@ extern "x86-interrupt" fn breakpoint_handler(
 }
 
 extern "x86-interrupt" fn double_fault_handler(
-    stack_frame: &mut ExceptionStackFrame, _error_code: u64)
+  stack_frame: &mut ExceptionStackFrame, _error_code: u64)
 {
-    println!("EXCEPTION: DOUBLE FAULT\n{:#?}", stack_frame);
-    loop {}
+  println!("EXCEPTION: DOUBLE FAULT\n{:#?}", stack_frame);
+  hlt_loop();
 }
 
 extern "x86-interrupt" fn timer_interrupt_handler(
-    _stack_frame: &mut ExceptionStackFrame)
+  _stack_frame: &mut ExceptionStackFrame)
 {
-    print!(".");
-    unsafe { PICS.lock().notify_end_of_interrupt(TIMER_INTERRUPT_ID) };
+  print!(".");
+  unsafe { PICS.lock().notify_end_of_interrupt(TIMER_INTERRUPT_ID) };
 }

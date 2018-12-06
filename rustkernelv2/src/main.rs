@@ -23,10 +23,7 @@ pub extern "C" fn _start() -> ! {
 
   println!("It did not crash");
   // unsafe { exit_qemu(); }
-
-  loop {
-    print!("-");
-  }
+  rustkernelv2::hlt_loop();
 }
 
 // Diverging function called on panic
@@ -34,5 +31,5 @@ pub extern "C" fn _start() -> ! {
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
   println!("{}", info);
-  loop {}
+  rustkernelv2::hlt_loop();
 }
