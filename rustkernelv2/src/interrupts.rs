@@ -95,6 +95,6 @@ extern "x86-interrupt" fn page_fault_handler(
 
   println!("EXCEPTION: PAGE FAULT");
   println!("Accessed Address: {:?}", Cr2::read());
-  println!("{:?}", stack_frame);
+  println!("{:#?}", stack_frame);
   hlt_loop();
 }
