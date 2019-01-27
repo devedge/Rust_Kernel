@@ -16,10 +16,15 @@ pub extern "C" fn _start() -> ! {
 
   println!("Hello World{}", "!");
 
+  // Set up the IDT to prevent a boot loop
   rustkernelv2::gdt::init();
   rustkernelv2::interrupts::init_idt();
   unsafe { PICS.lock().initialize() };
   x86_64::instructions::interrupts::enable();
+
+  // trigger a page fault
+  let ptr = 0xdeadbeef as *mut u32;
+  unsafe { *ptr = 42; }
 
   println!("It did not crash");
   // unsafe { exit_qemu(); }
