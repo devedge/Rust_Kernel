@@ -22,8 +22,11 @@ pub extern "C" fn _start() -> ! {
   unsafe { PICS.lock().initialize() };
   x86_64::instructions::interrupts::enable();
 
-  // trigger a page fault
-  let ptr = 0xdeadbeef as *mut u32;
+  // trigger a page fault. update pointer to one that can be accessed
+  let ptr = 0x203241 as *mut u32;
+  // try reading from the code page
+  unsafe { let x = *ptr; }
+  // try writing to the code page
   unsafe { *ptr = 42; }
 
   println!("It did not crash");
