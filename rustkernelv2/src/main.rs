@@ -22,12 +22,18 @@ pub extern "C" fn _start() -> ! {
   unsafe { PICS.lock().initialize() };
   x86_64::instructions::interrupts::enable();
 
-  // trigger a page fault. update pointer to one that can be accessed
-  let ptr = 0x203241 as *mut u32;
-  // try reading from the code page
-  unsafe { let x = *ptr; }
-  // try writing to the code page
-  unsafe { *ptr = 42; }
+  // try accessing & printing the page tables
+  use x86_64::registers::control::Cr3;
+  use x86_64::structures::paging::PageTable;
+
+  let (level_4_page_table, _) = Cr3::read();
+  println!("Level 4 page table at: {:?}", level_4_page_table.start_address());
+
+  let level_4_table_ptr = 0xffff_ffff_ffff_f000 as *const PageTable;
+  let level_4_table = unsafe {&*level_4_table_ptr};
+  for i in 0..10 {
+    println!("Entry {}: {:?}", i, level_4_table[i]);
+  }
 
   println!("It did not crash");
   // unsafe { exit_qemu(); }
