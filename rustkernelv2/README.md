@@ -1,4 +1,9 @@
 - Commands used to build the kernel
+  - `cargo install cargo-xbuild`
+  - `cargo install bootimage --version "^0.5.0"`
+
+    Install xbuild and bootimage
+
   - `cargo rustc -- -Z pre-link-arg=-nostartfiles`
 
     Build freestanding binary on Linux
