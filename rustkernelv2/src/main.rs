@@ -22,18 +22,14 @@ pub extern "C" fn _start() -> ! {
   unsafe { PICS.lock().initialize() };
   x86_64::instructions::interrupts::enable();
 
-  // try accessing & printing the page tables
-  use x86_64::registers::control::Cr3;
-  use x86_64::structures::paging::PageTable;
+  use rustkernelv2::memory::translate_addr;
 
-  let (level_4_page_table, _) = Cr3::read();
-  println!("Level 4 page table at: {:?}", level_4_page_table.start_address());
-
-  let level_4_table_ptr = 0xffff_ffff_ffff_f000 as *const PageTable;
-  let level_4_table = unsafe {&*level_4_table_ptr};
-  for i in 0..10 {
-    println!("Entry {}: {:?}", i, level_4_table[i]);
-  }
+  // the identity-mapped vga buffer page
+  println!("0xb8000 -> {:?}", translate_addr(0xb8000));
+  // a code page
+  println!("0x20010a -> {:?}", translate_addr(0x20010a));
+  // a stack page
+  println!("0x57ac001ffe48 -> {:?}", translate_addr(0x57ac001ffe48));
 
   println!("It did not crash");
   // unsafe { exit_qemu(); }

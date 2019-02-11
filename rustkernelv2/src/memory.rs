@@ -31,4 +31,28 @@ pub fn translate_addr(addr: usize) -> Option<PhysAddr> {
 
     // check that level 4 entry is mapped
     let level_4_table = unsafe { &*(level_4_table_addr as *const PageTable) };
+    if level_4_table[l4_idx].addr().is_null() {
+        return None;
+    }
+
+    // check that level 3 entry is mapped
+    let level_3_table = unsafe { &*(level_3_table_addr as *const PageTable) };
+    if level_3_table[l3_idx].addr().is_null() {
+        return None;
+    }
+
+    // check that level 2 entry is mapped
+    let level_2_table = unsafe { &*(level_2_table_addr as *const PageTable) };
+    if level_2_table[l2_idx].addr().is_null() {
+        return None;
+    }
+
+    // check that level 1 entry is mapped & retrieve physical address from it
+    let level_1_table = unsafe { &*(level_1_table_addr as *const PageTable) };
+    let phys_addr = level_1_table[l1_idx].addr();
+    if phys_addr.is_null() {
+        return None;
+    }
+
+    Some(phys_addr + page_offset)
 }
