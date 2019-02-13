@@ -19,7 +19,7 @@ pub fn translate_addr(addr: u64, recursive_page_table: &RecursivePageTable)
     -> Option<PhysAddr>
 {
     let addr = VirtAddr::new(addr);
-    let page: Page::containing_address(addr);
+    let page: Page = Page::containing_address(addr);
 
     // perform the translation
     let frame = recursive_page_table.translate_page(page);

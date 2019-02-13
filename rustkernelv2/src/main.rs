@@ -22,17 +22,19 @@ pub extern "C" fn _start() -> ! {
   unsafe { PICS.lock().initialize() };
   x86_64::instructions::interrupts::enable();
 
-  use rustkernelv2::memory::translate_addr;
+  use rustkernelv2::memory::{self, translate_addr};
+
+  const LEVEL_4_TABLE_ADDR: usize = 0o_177777_777_777_777_777_0000;
+  let recursive_page_table = unsafe { memory::init(LEVEL_4_TABLE_ADDR) };
 
   // the identity-mapped vga buffer page
-  println!("0xb8000 -> {:?}", translate_addr(0xb8000));
-  // a code page
-  println!("0x20010a -> {:?}", translate_addr(0x20010a));
-  // a stack page
-  println!("0x57ac001ffe48 -> {:?}", translate_addr(0x57ac001ffe48));
+  println!("0xb8000 -> {:?}", translate_addr(0xb8000, &recursive_page_table));
+  // some code page
+  println!("0x20010a -> {:?}", translate_addr(0x20010a, &recursive_page_table));
+  // some stack page
+  println!("0x57ac001ffe48 -> {:?}", translate_addr(0x57ac001ffe48, &recursive_page_table));
 
   println!("It did not crash");
-  // unsafe { exit_qemu(); }
   rustkernelv2::hlt_loop();
 }
 
