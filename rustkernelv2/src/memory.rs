@@ -8,9 +8,16 @@ use x86_64::structures::paging::{Mapper, Page, PageTable, RecursivePageTable};
 /// This function is unsafe because it can break memory safety if an invalid
 /// address is passed.
 pub unsafe fn init(level_4_table_addr: usize) -> RecursivePageTable<'static> {
-    let level_4_table_ptr = level_4_table_addr as *mut PageTable;
-    let level_4_table = &mut *level_4_table_ptr;
-    RecursivePageTable::new(level_4_table).unwrap()
+    /// Rust currently treats the whole body of unsafe functions as an unsafe
+    /// block, which makes it difficult to see which operations are unsafe. To
+    /// limit the scope of unsafe we use a safe inner function.
+    fn init_inner(level_4_table_addr: usize) -> RecursivePageTable<'static> {
+        let level_4_table_ptr = level_4_table_addr as *mut PageTable;
+        let level_4_table = unsafe { &mut *level_4_table_ptr };
+        RecursivePageTable::new(level_4_table).unwrap()
+    }
+
+    init_inner(level_4_table_addr)
 }
 
 /// Returns the physical address for the given virtual address, or `None` if
