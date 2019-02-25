@@ -6,7 +6,7 @@
 #![cfg_attr(test, allow(dead_code, unused_macros, unused_imports))]
 
 use core::panic::PanicInfo;
-use rustkernelv2::{exit_qemu, print, println, serial_println};
+use rustkernelv2::{println, memory};
 
 // Entry point convention for Linux. Disable compiler name mangling.
 #[cfg(not(test))]
@@ -21,18 +21,15 @@ pub extern "C" fn _start() -> ! {
   rustkernelv2::interrupts::init_idt();
   unsafe { PICS.lock().initialize() };
   x86_64::instructions::interrupts::enable();
+  // end initializing GDT, IDT, PICS
 
-  use rustkernelv2::memory::{self, translate_addr};
+  use rustkernelv2::memory::{create_example_mapping, EmptyFrameAllocator};
 
   const LEVEL_4_TABLE_ADDR: usize = 0o_177777_777_777_777_777_0000;
-  let recursive_page_table = unsafe { memory::init(LEVEL_4_TABLE_ADDR) };
+  let mut recursive_page_table = unsafe { memory::init(LEVEL_4_TABLE_ADDR) };
 
-  // the identity-mapped vga buffer page
-  println!("0xb8000 -> {:?}", translate_addr(0xb8000, &recursive_page_table));
-  // some code page
-  println!("0x20010a -> {:?}", translate_addr(0x20010a, &recursive_page_table));
-  // some stack page
-  println!("0x57ac001ffe48 -> {:?}", translate_addr(0x57ac001ffe48, &recursive_page_table));
+  create_example_mapping(&mut recursive_page_table, &mut EmptyFrameAllocator);
+  unsafe { (0x1900 as *mut u64).write_volatile(0xf021f077f065f04e) };
 
   println!("It did not crash");
   rustkernelv2::hlt_loop();
