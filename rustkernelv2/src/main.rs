@@ -5,13 +5,15 @@
 #![cfg_attr(not(test), no_main)]
 #![cfg_attr(test, allow(dead_code, unused_macros, unused_imports))]
 
+use bootloader::{bootinfo::BootInfo, entry_point};
 use core::panic::PanicInfo;
 use rustkernelv2::{println, memory};
 
+entry_point!(kernel_main);
+
 // Entry point convention for Linux. Disable compiler name mangling.
 #[cfg(not(test))]
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
+fn kernel_main(boot_info: &'static BootInfo) -> ! {
   use rustkernelv2::interrupts::PICS;
 
   println!("Hello World{}", "!");
@@ -23,13 +25,14 @@ pub extern "C" fn _start() -> ! {
   x86_64::instructions::interrupts::enable();
   // end initializing GDT, IDT, PICS
 
-  use rustkernelv2::memory::{create_example_mapping, EmptyFrameAllocator};
+  let mut recursive_page_table = unsafe {
+    memory::init(boot_info.p4_table_addr as usize)
+  };
 
-  const LEVEL_4_TABLE_ADDR: usize = 0o_177777_777_777_777_777_0000;
-  let mut recursive_page_table = unsafe { memory::init(LEVEL_4_TABLE_ADDR) };
+  let mut frame_allocator = memory::init_frame_allocator(&boot_info.memory_map);
 
-  create_example_mapping(&mut recursive_page_table, &mut EmptyFrameAllocator);
-  unsafe { (0x1900 as *mut u64).write_volatile(0xf021f077f065f04e) };
+  rustkernelv2::memory::create_mapping(&mut recursive_page_table, &mut frame_allocator);
+  unsafe { (0xdeadbeaf900 as *mut u64).write_volatile(0xf021f077f065f04e) };
 
   println!("It did not crash");
   rustkernelv2::hlt_loop();
