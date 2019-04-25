@@ -1,8 +1,10 @@
 // Paging management
 
 use bootloader::bootinfo::{MemoryMap, MemoryRegionType};
-use x86_64::{VirtAddr, PhysAddr};
-use x86_64::structures::paging::{FrameAllocator, PhysFrame, Size4KiB, Mapper, Page, PageTable, RecursivePageTable};
+use x86_64::structures::paging::{
+    FrameAllocator, Mapper, Page, PageTable, PhysFrame, RecursivePageTable, Size4KiB,
+};
+use x86_64::{PhysAddr, VirtAddr};
 
 /// Creates a RecursivePageTable instance from the level 4 address.
 ///
@@ -23,9 +25,7 @@ pub unsafe fn init(level_4_table_addr: usize) -> RecursivePageTable<'static> {
 
 /// Returns the physical address for the given virtual address, or `None` if
 /// the virtual address is not mapped.
-pub fn translate_addr(addr: u64, recursive_page_table: &RecursivePageTable)
-    -> Option<PhysAddr>
-{
+pub fn translate_addr(addr: u64, recursive_page_table: &RecursivePageTable) -> Option<PhysAddr> {
     let addr = VirtAddr::new(addr);
     let page: Page = Page::containing_address(addr);
 
@@ -43,12 +43,16 @@ impl FrameAllocator<Size4KiB> for EmptyFrameAllocator {
     }
 }
 
-pub struct BootInfoFrameAllocator<I> where I: Iterator<Item = PhysFrame> {
+pub struct BootInfoFrameAllocator<I>
+where
+    I: Iterator<Item = PhysFrame>,
+{
     frames: I,
 }
 
 impl<I> FrameAllocator<Size4KiB> for BootInfoFrameAllocator<I>
-    where I: Iterator<Item = PhysFrame>
+where
+    I: Iterator<Item = PhysFrame>,
 {
     fn allocate_frame(&mut self) -> Option<PhysFrame> {
         self.frames.next()
@@ -66,9 +70,7 @@ pub fn create_mapping(
     let frame = PhysFrame::containing_address(PhysAddr::new(0xb8000));
     let flags = Flags::PRESENT | Flags::WRITABLE;
 
-    let map_to_result = unsafe {
-        recursive_page_table.map_to(page, frame, flags, frame_allocator)
-    };
+    let map_to_result = unsafe { recursive_page_table.map_to(page, frame, flags, frame_allocator) };
     map_to_result.expect("map_to failed").flush();
 }
 
@@ -88,9 +90,7 @@ pub fn init_frame_allocator(
     let frame_addresses = addr_ranges.flat_map(|r| r.into_iter().step_by(4096));
 
     // create `PhysFrame` types from the start addresses
-    let frames = frame_addresses.map(|addr| {
-        PhysFrame::containing_address(PhysAddr::new(addr))
-    });
+    let frames = frame_addresses.map(|addr| PhysFrame::containing_address(PhysAddr::new(addr)));
 
     BootInfoFrameAllocator { frames }
 }
