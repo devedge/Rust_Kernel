@@ -1,96 +1,22 @@
 // Paging management
 
-use bootloader::bootinfo::{MemoryMap, MemoryRegionType};
-use x86_64::structures::paging::{
-    FrameAllocator, Mapper, Page, PageTable, PhysFrame, RecursivePageTable, Size4KiB,
-};
-use x86_64::{PhysAddr, VirtAddr};
+use x86_64::structures::paging::PageTable;
 
-/// Creates a RecursivePageTable instance from the level 4 address.
+/// Returns a mutable reference to the active level 4 table.
 ///
-/// This function is unsafe because it can break memory safety if an invalid
-/// address is passed.
-pub unsafe fn init(level_4_table_addr: usize) -> RecursivePageTable<'static> {
-    /// Rust currently treats the whole body of unsafe functions as an unsafe
-    /// block, which makes it difficult to see which operations are unsafe. To
-    /// limit the scope of unsafe we use a safe inner function.
-    fn init_inner(level_4_table_addr: usize) -> RecursivePageTable<'static> {
-        let level_4_table_ptr = level_4_table_addr as *mut PageTable;
-        let level_4_table = unsafe { &mut *level_4_table_ptr };
-        RecursivePageTable::new(level_4_table).unwrap()
-    }
+/// This function is unsafe because the caller must guarantee that the
+/// complete physical memory is mapped to virtual memory at the passed
+/// `physical_memory_offset`. Also, this function must be only called once
+/// to avoid aliasing `&mut` references (which is undefined behavior).
 
-    init_inner(level_4_table_addr)
-}
+pub unsafe fn active_level_4_table(physical_memory_offset: u64) -> &'static mut PageTable {
+    use x86_64::{registers::control::Cr3, VirtAddr};
 
-/// Returns the physical address for the given virtual address, or `None` if
-/// the virtual address is not mapped.
-pub fn translate_addr(addr: u64, recursive_page_table: &RecursivePageTable) -> Option<PhysAddr> {
-    let addr = VirtAddr::new(addr);
-    let page: Page = Page::containing_address(addr);
+    let (level_4_table_frame, _) = Cr3::read();
 
-    // perform the translation
-    let frame = recursive_page_table.translate_page(page);
-    frame.map(|frame| frame.start_address() + u64::from(addr.page_offset()))
-}
+    let phys = level_4_table_frame.start_address();
+    let virt = VirtAddr::new(phys.as_u64() + physical_memory_offset);
+    let page_table_ptr: *mut PageTable = virt.as_mut_ptr();
 
-/// A FrameAllocator that always returns `None`.
-pub struct EmptyFrameAllocator;
-
-impl FrameAllocator<Size4KiB> for EmptyFrameAllocator {
-    fn allocate_frame(&mut self) -> Option<PhysFrame> {
-        None
-    }
-}
-
-pub struct BootInfoFrameAllocator<I>
-where
-    I: Iterator<Item = PhysFrame>,
-{
-    frames: I,
-}
-
-impl<I> FrameAllocator<Size4KiB> for BootInfoFrameAllocator<I>
-where
-    I: Iterator<Item = PhysFrame>,
-{
-    fn allocate_frame(&mut self) -> Option<PhysFrame> {
-        self.frames.next()
-    }
-}
-
-/// Create a new mapping in the page table hierarchy
-pub fn create_mapping(
-    recursive_page_table: &mut RecursivePageTable,
-    frame_allocator: &mut impl FrameAllocator<Size4KiB>,
-) {
-    use x86_64::structures::paging::PageTableFlags as Flags;
-
-    let page: Page = Page::containing_address(VirtAddr::new(0xdeadbeaf000));
-    let frame = PhysFrame::containing_address(PhysAddr::new(0xb8000));
-    let flags = Flags::PRESENT | Flags::WRITABLE;
-
-    let map_to_result = unsafe { recursive_page_table.map_to(page, frame, flags, frame_allocator) };
-    map_to_result.expect("map_to failed").flush();
-}
-
-/// Create a FrameAllocator from the passed memory map
-pub fn init_frame_allocator(
-    memory_map: &'static MemoryMap,
-) -> BootInfoFrameAllocator<impl Iterator<Item = PhysFrame>> {
-    // get usable regions from memory map
-    let regions = memory_map
-        .iter()
-        .filter(|r| r.region_type == MemoryRegionType::Usable);
-
-    // map each region to its address range
-    let addr_ranges = regions.map(|r| r.range.start_addr()..r.range.end_addr());
-
-    // transform to an iterator of frame start addresses
-    let frame_addresses = addr_ranges.flat_map(|r| r.into_iter().step_by(4096));
-
-    // create `PhysFrame` types from the start addresses
-    let frames = frame_addresses.map(|addr| PhysFrame::containing_address(PhysAddr::new(addr)));
-
-    BootInfoFrameAllocator { frames }
+    &mut *page_table_ptr // unsafe
 }

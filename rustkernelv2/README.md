@@ -51,3 +51,15 @@
   - `bootimage test`
 
     Run all integration tests under `src/bin/` that start with `test-`
+
+    To upgrade `bootimage`, run
+
+  - `cargo install bootimage --force`
+
+    To get the bootloader to compile, run
+
+  - `rustup component add llvm-tools-preview`
+
+    To build the kernel, run
+
+  - `bootimage build`

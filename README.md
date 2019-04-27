@@ -1,4 +1,3 @@
 # Rust_Kernel
-Minimal x86_64 Kernel in Rust
-
-Guide can be found here: https://os.phil-opp.com
+A minimal x86_64 Kernel in Rust, following the guide that can be found here:
+https://os.phil-opp.com

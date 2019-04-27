@@ -7,7 +7,7 @@
 
 use bootloader::{bootinfo::BootInfo, entry_point};
 use core::panic::PanicInfo;
-use rustkernelv2::{memory, println};
+use rustkernelv2::println;
 
 entry_point!(kernel_main);
 
@@ -25,12 +25,15 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     x86_64::instructions::interrupts::enable();
     // end initializing GDT, IDT, PICS
 
-    let mut recursive_page_table = unsafe { memory::init(boot_info.p4_table_addr as usize) };
+    use rustkernelv2::memory::active_level_4_table;
 
-    let mut frame_allocator = memory::init_frame_allocator(&boot_info.memory_map);
+    let l4_table = unsafe { active_level_4_table(boot_info.physical_memory_offset) };
 
-    rustkernelv2::memory::create_mapping(&mut recursive_page_table, &mut frame_allocator);
-    unsafe { (0xdeadbeaf900 as *mut u64).write_volatile(0xf021f077f065f04e) };
+    for (i, entry) in l4_table.iter().enumerate() {
+        if !entry.is_unused() {
+            println!("L4 Entry {}: {:?}", i, entry);
+        }
+    }
 
     println!("It did not crash");
     rustkernelv2::hlt_loop();
