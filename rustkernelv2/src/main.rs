@@ -25,29 +25,26 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     x86_64::instructions::interrupts::enable();
     // end initializing GDT, IDT, PICS
 
-    use rustkernelv2::memory::active_level_4_table;
+    use rustkernelv2::memory;
+    use x86_64::{structures::paging::MapperAllSizes, VirtAddr};
 
-    let l4_table = unsafe { active_level_4_table(boot_info.physical_memory_offset) };
+    let mapper = unsafe { memory::init(boot_info.physical_memory_offset) };
 
-    for (i, entry) in l4_table.iter().enumerate() {
-        use x86_64::{structures::paging::PageTable, VirtAddr};
+    let addresses = [
+        // the identity-mapped vga buffer page
+        0xb8000,
+        // some code page
+        0x20010a,
+        // some stack page
+        0x57ac_001f_fe48,
+        // virtual address mapped to physical address 0
+        boot_info.physical_memory_offset,
+    ];
 
-        if !entry.is_unused() {
-            println!("L4 Entry {}: {:?}", i, entry);
-
-            // get the physical address from the entry and convert it
-            let phys = entry.frame().unwrap().start_address();
-            let virt = phys.as_u64() + boot_info.physical_memory_offset;
-            let ptr = VirtAddr::new(virt).as_mut_ptr();
-            let l3_table: &PageTable = unsafe { &*ptr };
-
-            // print non-empty entries of the level 3 table
-            for (i, entry) in l3_table.iter().enumerate() {
-                if !entry.is_unused() {
-                    println!("L3 Entry {}: {:?}", i, entry);
-                }
-            }
-        }
+    for &address in &addresses {
+        let virt = VirtAddr::new(address);
+        let phys = mapper.translate_addr(virt); // use new mapper
+        println!("{:?} -> {:?}", virt, phys);
     }
 
     println!("It did not crash");
