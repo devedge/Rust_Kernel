@@ -25,11 +25,11 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     x86_64::instructions::interrupts::enable();
     // end initializing GDT, IDT, PICS
 
-    use rustkernelv2::memory;
+    use rustkernelv2::memory::{self, BootInfoFrameAllocator};
     use x86_64::{structures::paging::Page, VirtAddr};
 
     let mut mapper = unsafe { memory::init(boot_info.physical_memory_offset) };
-    let mut frame_allocator = memory::init_frame_allocator(&boot_info.memory_map);
+    let mut frame_allocator = unsafe { BootInfoFrameAllocator::init(&boot_info.memory_map) };
 
     // map a previously unmapped page
     let page = Page::containing_address(VirtAddr::new(0xdeadbeaf000));
