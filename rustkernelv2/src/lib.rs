@@ -3,13 +3,24 @@
 // Override attributes
 #![feature(abi_x86_interrupt)]
 #![cfg_attr(not(test), no_std)]
+#![feature(alloc_error_handler)]
+
+// use the built-in alloc crate
+extern crate alloc;
+
+// use linked_list_allocator crate
+use linked_list_allocator::LockedHeap;
 
 // define modules, and make them publicly available outside this file
+pub mod allocator;
 pub mod gdt;
 pub mod interrupts;
 pub mod memory;
 pub mod serial;
 pub mod vga_buffer;
+
+#[global_allocator]
+static ALLOCATOR: LockedHeap = LockedHeap::empty();
 
 // Shut down qemu using the isa-debug-exit device (from qemu) located at
 // x86's IO port 0xf4.
@@ -24,4 +35,9 @@ pub fn hlt_loop() -> ! {
     loop {
         x86_64::instructions::hlt();
     }
+}
+
+#[alloc_error_handler]
+fn alloc_error_handler(layout: alloc::alloc::Layout) -> ! {
+    panic!("allocation error: {:?}", layout)
 }

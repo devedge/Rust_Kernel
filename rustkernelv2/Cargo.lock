@@ -97,6 +97,14 @@ version = "0.2.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
+name = "linked_list_allocator"
+version = "0.6.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "spin 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
 name = "llvm-tools"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -170,6 +178,7 @@ dependencies = [
  "array-init 0.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "bootloader 0.6.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "linked_list_allocator 0.6.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "pc-keyboard 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "pic8259_simple 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "spin 0.4.10 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -203,6 +212,11 @@ dependencies = [
 [[package]]
 name = "spin"
 version = "0.4.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "spin"
+version = "0.5.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -316,6 +330,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum getopts 0.2.18 (registry+https://github.com/rust-lang/crates.io-index)" = "0a7292d30132fb5424b354f5dc02512a86e4c516fe544bb7a25e7f266951b797"
 "checksum lazy_static 1.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "a374c89b9db55895453a74c1e38861d9deec0b01b405a82516e9d5de4820dea1"
 "checksum libc 0.2.44 (registry+https://github.com/rust-lang/crates.io-index)" = "10923947f84a519a45c8fefb7dd1b3e8c08747993381adee176d7a82b4195311"
+"checksum linked_list_allocator 0.6.4 (registry+https://github.com/rust-lang/crates.io-index)" = "47314ec1d29aa869ee7cb5a5be57be9b1055c56567d59c3fb6689926743e0bea"
 "checksum llvm-tools 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "955be5d0ca0465caf127165acb47964f911e2bc26073e865deb8be7189302faf"
 "checksum nodrop 0.1.13 (registry+https://github.com/rust-lang/crates.io-index)" = "2f9667ddcc6cc8a43afc9b7917599d7216aa09c463919ea32c59ed6cac8bc945"
 "checksum pc-keyboard 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "fff50ab09ba31bcebc0669f4e64c0952fae1acdca9e6e0587e68e4e8443808ac"
@@ -329,6 +344,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum semver-parser 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
 "checksum skeptic 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "061203a849117b0f7090baf8157aa91dac30545208fbb85166ac58b4ca33d89c"
 "checksum spin 0.4.10 (registry+https://github.com/rust-lang/crates.io-index)" = "ceac490aa12c567115b40b7b7fceca03a6c9d53d5defea066123debc83c5dc1f"
+"checksum spin 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)" = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
 "checksum tempdir 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)" = "15f2b5fb00ccdf689e0149d1b1b3c03fead81c2b37735d812fa8bddbbf41b6d8"
 "checksum uart_16550 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "5b9392f60931fe3bf8f24e0a15ee4f51528770f1d64c48768ab66571334d95b0"
 "checksum unicode-width 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "882386231c45df4700b275c7ff55b6f3698780a650026380e72dabe76fa46526"
