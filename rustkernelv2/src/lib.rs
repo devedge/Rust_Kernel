@@ -8,9 +8,6 @@
 // use the built-in alloc crate
 extern crate alloc;
 
-// use linked_list_allocator crate
-use linked_list_allocator::LockedHeap;
-
 // define modules, and make them publicly available outside this file
 pub mod allocator;
 pub mod gdt;
@@ -18,9 +15,6 @@ pub mod interrupts;
 pub mod memory;
 pub mod serial;
 pub mod vga_buffer;
-
-#[global_allocator]
-static ALLOCATOR: LockedHeap = LockedHeap::empty();
 
 // Shut down qemu using the isa-debug-exit device (from qemu) located at
 // x86's IO port 0xf4.

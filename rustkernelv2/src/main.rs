@@ -19,6 +19,7 @@ entry_point!(kernel_main);
 fn kernel_main(boot_info: &'static BootInfo) -> ! {
     use rustkernelv2::interrupts::PICS;
     use rustkernelv2::allocator;
+    use x86_64::VirtAddr;
 
     println!("Hello World{}", "!");
 
@@ -30,9 +31,9 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     // end initializing GDT, IDT, PICS
 
     use rustkernelv2::memory::{self, BootInfoFrameAllocator};
-    use x86_64::{structures::paging::Page, VirtAddr};
 
-    let mut mapper = unsafe { memory::init(boot_info.physical_memory_offset) };
+    let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
+    let mut mapper = unsafe { memory::init(phys_mem_offset) };
     let mut frame_allocator = unsafe { BootInfoFrameAllocator::init(&boot_info.memory_map) };
 
     allocator::init_heap(&mut mapper, &mut frame_allocator)
@@ -54,14 +55,6 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     println!("current reference count is {}", Rc::strong_count(&cloned_reference));
     core::mem::drop(reference_counted);
     println!("reference count is {} now", Rc::strong_count(&cloned_reference));
-
-    // map a previously unmapped page
-    let page = Page::containing_address(VirtAddr::new(0xdeadbeaf000));
-    memory::create_example_mapping(page, &mut mapper, &mut frame_allocator);
-
-    // Write the string `New!` to the screen through the new mapping
-    let page_ptr: *mut u64 = page.start_address().as_mut_ptr();
-    unsafe { page_ptr.offset(400).write_volatile(0x_f021_f077_f065_f04e) };
 
     println!("It did not crash");
     rustkernelv2::hlt_loop();

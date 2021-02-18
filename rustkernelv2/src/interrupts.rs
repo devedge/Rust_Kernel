@@ -44,9 +44,8 @@ extern "x86-interrupt" fn breakpoint_handler(stack_frame: &mut InterruptStackFra
 extern "x86-interrupt" fn double_fault_handler(
     stack_frame: &mut InterruptStackFrame,
     _error_code: u64,
-) {
-    println!("EXCEPTION: DOUBLE FAULT\n{:#?}", stack_frame);
-    hlt_loop();
+) -> ! {
+    panic!("EXCEPTION: DOUBLE FAULT\n{:#?}", stack_frame);
 }
 
 extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: &mut InterruptStackFrame) {
@@ -55,13 +54,13 @@ extern "x86-interrupt" fn timer_interrupt_handler(_stack_frame: &mut InterruptSt
 }
 
 extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: &mut InterruptStackFrame) {
-    use pc_keyboard::{layouts, DecodedKey, Keyboard, ScancodeSet1};
+    use pc_keyboard::{layouts, DecodedKey, HandleControl, Keyboard, ScancodeSet1};
     use spin::Mutex;
     use x86_64::instructions::port::Port;
 
     lazy_static! {
         static ref KEYBOARD: Mutex<Keyboard<layouts::Us104Key, ScancodeSet1>> =
-            Mutex::new(Keyboard::new(layouts::Us104Key, ScancodeSet1));
+            Mutex::new(Keyboard::new(layouts::Us104Key, ScancodeSet1, HandleControl::Ignore));
     }
 
     let mut keyboard = KEYBOARD.lock();
