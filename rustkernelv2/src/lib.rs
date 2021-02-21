@@ -15,6 +15,7 @@ pub mod interrupts;
 pub mod memory;
 pub mod serial;
 pub mod vga_buffer;
+pub mod task;
 
 // Shut down qemu using the isa-debug-exit device (from qemu) located at
 // x86's IO port 0xf4.
